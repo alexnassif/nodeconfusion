@@ -183,6 +183,7 @@ dishRouter.route('/:dishId/comments/:commentId')
 .put(authenticate.verifyUser, (req, res, next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
+      if(req.user._id.equals(dish.comments.id(req.params.commentId).author._id)){
         if (dish != null && dish.comments.id(req.params.commentId) != null) {
             if (req.body.rating) {
                 dish.comments.id(req.params.commentId).rating = req.body.rating;
@@ -211,12 +212,18 @@ dishRouter.route('/:dishId/comments/:commentId')
             err.status = 404;
             return next(err);
         }
+      } else {
+          err = new Error('u are not authorized to change comment');
+          err.status = 404;
+          return next(err);
+      }
     }, (err) => next(err))
     .catch((err) => next(err));
 })
 .delete(authenticate.verifyUser, (req, res, next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
+      if(req.user._id.equals(dish.comments.id(req.params.commentId).author._id)){
         if (dish != null && dish.comments.id(req.params.commentId) != null) {
 
             dish.comments.id(req.params.commentId).remove();
@@ -241,6 +248,11 @@ dishRouter.route('/:dishId/comments/:commentId')
             err.status = 404;
             return next(err);
         }
+      } else {
+          err = new Error('you are not authorized to delete account');
+          err.status = 404;
+          return next(err);
+      }
     }, (err) => next(err))
     .catch((err) => next(err));
 });
